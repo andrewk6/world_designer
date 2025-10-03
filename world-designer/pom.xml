@@ -6,5 +6,11 @@
   <name>World Designer</name>
   <description>A java tool used to design and create TTRPG settings system/genre agnostic.</description>
   
-  
+  <dependencies>
+  	<dependency>
+ 		 <groupId>io.github.geniot</groupId>
+ 		 <artifactId>jortho</artifactId>
+  		 <version>1.1</version>
+	</dependency>
+  </dependencies>
 </project>
