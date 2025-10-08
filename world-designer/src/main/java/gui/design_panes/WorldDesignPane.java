@@ -17,6 +17,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 import data.DataEnums.SettingStyle;
+import data.DataManager;
 import data.predefined.WorldArticle;
 import gui.components.ReminderField;
 import gui.components.editor.RichEditor;
@@ -29,7 +30,9 @@ public class WorldDesignPane extends JPanel{
 			JFrame frm = new JFrame();
 			Container c = frm.getContentPane();
 			c.setLayout(new BorderLayout());
-			WorldDesignPane wdPane = new WorldDesignPane(new WorldArticle("Test"));
+			WorldDesignPane wdPane = new WorldDesignPane(
+					new DataManager(),
+					new WorldArticle("Test"));
 			c.add(wdPane, BorderLayout.CENTER);
 			c.add(CompFactory.createButtonFlow(FlowLayout.RIGHT, new JButton[] {
 				CompFactory.createButton("Print World", e->{
@@ -42,9 +45,13 @@ public class WorldDesignPane extends JPanel{
 			frm.setVisible(true);
 		});
 	}
+	private final DataManager data;
+	
 	private WorldArticle world;
 	
-	public WorldDesignPane(WorldArticle w) {
+	
+	public WorldDesignPane(DataManager data, WorldArticle w) {
+		this.data = data;
 		this.world = w;
 		init();
 	}
@@ -56,8 +63,8 @@ public class WorldDesignPane extends JPanel{
 		hPane.setLayout(new BorderLayout());
 		this.add(hPane, BorderLayout.NORTH);
 		ReminderField nameField = CompFactory.createUpdateField(
-				"World name...", FontStyle.HEADER3, text -> world.name = text);
-		nameField.setText(world.name);
+				"World name...", FontStyle.HEADER3, text -> world.key.setName(text));
+		nameField.setText(world.key.getName());
 		hPane.add(CompFactory.createSplitPane("Name: ", nameField),BorderLayout.NORTH);
 		
 		DefaultListModel<SettingStyle> styleModel = new DefaultListModel<SettingStyle>();
@@ -93,7 +100,7 @@ public class WorldDesignPane extends JPanel{
 		
 		hPane.add(CompFactory.createSplitPane(settingPane, list));
 		
-		RichEditor editor = new RichEditor();
+		RichEditor editor = new RichEditor(data);
 		editor.loadDocument(world.worldDoc);
 		this.add(editor, BorderLayout.CENTER);
 	}

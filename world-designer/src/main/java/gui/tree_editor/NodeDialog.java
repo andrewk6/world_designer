@@ -7,7 +7,7 @@ import java.awt.Dialog.ModalityType;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 
-import gui.editor.ProjectNode;
+import gui.tree_editor.ProjectNode;
 
 public class NodeDialog extends JDialog
 {

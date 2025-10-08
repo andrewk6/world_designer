@@ -20,4 +20,19 @@ public class DataEnums
 			return desc;
 		}
 	}
+	
+	public enum ArticleCategory{
+		PERSON("Person"),
+		PLACE("Place"),
+		FACTION("Faction");
+		
+		private String desc;
+		ArticleCategory(String desc){
+			this.desc = desc;
+		}
+		
+		public String toString() {
+			return desc;
+		}
+	}
 }

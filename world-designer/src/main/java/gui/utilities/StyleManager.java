@@ -44,9 +44,9 @@ public class StyleManager
 	public static final Font BODY2_PLAIN = new Font("Monospaced", Font.PLAIN, 16);
 	public static final Font BODY2_BOLD = new Font("Monospaced", Font.BOLD, 16);
 	public static final Font BODY2_ITALIC = new Font("Monospaced", Font.ITALIC, 16);
-	
-	
 	public static final Font BUTTON = new Font("Monospaced", Font.BOLD, 18);
+	
+	public static final String DOC_ICON_RESOURCE = "/doc_icon.png";
 	
 	public static void setLookAndFeel() {
 		try {

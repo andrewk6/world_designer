@@ -1,4 +1,4 @@
-package gui.editor;
+package gui.tree_editor;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
