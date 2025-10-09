@@ -66,4 +66,8 @@ public class ArticleTreePane extends JPanel
 	public ArticleTree getTree() {
 		return tree;
 	}
+	
+	public void loadTree(DefaultMutableTreeNode root) {
+		tree.setModel(new SortedTreeModel(root));
+	}
 }

@@ -12,5 +12,15 @@
  		 <artifactId>jortho</artifactId>
   		 <version>1.1</version>
 	</dependency>
+	<dependency>
+  		<groupId>org.openjfx</groupId>
+  		<artifactId>javafx-controls</artifactId>
+  		<version>23</version>
+	</dependency>
+	<dependency>
+    	<groupId>org.openjfx</groupId>
+    	<artifactId>javafx-swing</artifactId>
+    	<version>23</version>
+  	</dependency>
   </dependencies>
 </project>

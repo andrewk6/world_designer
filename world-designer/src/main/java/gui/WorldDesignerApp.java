@@ -3,6 +3,7 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 
 import javax.swing.BorderFactory;
@@ -54,7 +55,8 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 	public WorldDesignerApp(DataManager data)
 	{
 		this.data = data;
-		data.registerWorldListener(this);
+		this.data.registerAppFrame(this);
+		this.data.registerWorldListener(this);
 		
 		buildContent(getContentPane());
 		buildToolbar();
@@ -158,23 +160,22 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 		JPanel cardWrapper = new JPanel();
 		cardWrapper.setLayout(new CardLayout());
 		CardLayout cl = (CardLayout) cardWrapper.getLayout();
-		WorldListener cardListen = new WorldListener() {
-			@Override
-			public void onWorldChanged() {
-				cl.show(cardWrapper, "edit");
-				buildTabPanes(data.getWorld());
-				data.deregisterWorldListener(this);
-				
-				WorldListener tabListener = new WorldListener() {
-					@Override
-					public void onWorldChanged() {
-						buildTabPanes(data.getWorld());
-					}
-				};
-				data.registerWorldListener(tabListener);
-			}
-		};
-		data.registerWorldListener(cardListen);
+//		WorldListener cardListen = new WorldListener() {
+//			@Override
+//			public void onWorldChanged() {
+//				cl.show(cardWrapper, "edit");
+//				data.deregisterWorldListener(this);
+//				
+//				WorldListener tabListener = new WorldListener() {
+//					@Override
+//					public void onWorldChanged() {
+//						buildTabPanes(data.getWorld());
+//					}
+//				};
+//				data.registerWorldListener(tabListener);
+//			}
+//		};
+//		data.registerWorldListener(cardListen);
 		mainPane.add(cardWrapper, BorderLayout.CENTER);
 		
 		JPanel noLoadPane = new JPanel();
@@ -208,8 +209,6 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 	}
 	
 	private void buildTabPanes(WorldArticle w) {
-		editTabs.removeAll();
-		
 		worldDetailPane = new WorldDesignPane(data, w);
 		editTabs.addTab(w.key.getName() + " - Details", worldDetailPane);
 		
@@ -219,20 +218,30 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 	}
 
 	@Override
-	public void onWorldChanged() {		
-		buildTabPanes(data.getWorld());
-		
+	public void onWorldChanged() {	
+		Component tabComp = editTabs.getSelectedComponent();
 		if(data.getWorld() != null && articleMenu.isVisible() == false) {
 			articleMenu.setVisible(true);
 		}
 		
-		if(data.getWorld() != null && editTabs.isVisible() == false)
+		if(editTabs.isVisible() == false || 
+				(worldDetailPane == null && artTreePane == null))
 		{
-			CardLayout cl = (CardLayout) editTabs.getParent().getLayout();
-			cl.show(editTabs.getParent(), "edit");
 			SwingUtilities.invokeLater(()->{
-				data.getWorldKey().registerNameListener(tabTitleUpdate);
-			});
+				buildTabPanes(data.getWorld());
+				CardLayout cl = (CardLayout) editTabs.getParent().getLayout();
+				cl.show(editTabs.getParent(), "edit");
+				
+				SwingUtilities.invokeLater(()->{
+					data.getWorldKey().registerNameListener(tabTitleUpdate);
+				});
+				
+			});			
+		}else {
+			worldDetailPane.loadWorld(data.getWorld());
+			artTreePane.loadTree(data.getWorldTreeRoot());
+			if(tabComp != null)
+				editTabs.setSelectedComponent(tabComp);
 		}
 	}
 }

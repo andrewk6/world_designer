@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import data.DataEnums.ArticleCategory;
@@ -19,6 +20,7 @@ import data.abstracts.AbstractArticle;
 import data.listeners.WorldListener;
 import data.predefined.BasicArticle;
 import data.predefined.WorldArticle;
+import gui.dialogs.FXFileDialog;
 
 public class DataManager
 {
@@ -27,6 +29,8 @@ public class DataManager
 	
 	private WorldArticle world;
 	private ArrayList<WorldListener> worldListeners;
+	
+	private JFrame appFrame;
 	
 	public DataManager() {
 		world = null;
@@ -79,17 +83,22 @@ public class DataManager
 		}
 	}
 	
+	public void registerAppFrame(JFrame frm) {
+		this.appFrame = frm;
+	}
+	
 	public void exit() {
 		if(!worldEdited)
 			System.exit(0);
 	}
 	
 	public void saveWorld() {
-		JFileChooser fChoose = new JFileChooser();
-		if(fChoose.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+//		JFileChooser fChoose = new JFileChooser();
+		File f = FXFileDialog.saveWorldFile(appFrame);
+		if(f != null) {
 			try {
 				ObjectOutputStream oos = new ObjectOutputStream(
-						new FileOutputStream(fChoose.getSelectedFile()));
+						new FileOutputStream(f));
 				System.out.println("Writing World Cat: " + world.styles.toString());
 				oos.writeObject(world);
 				oos.flush();
@@ -101,11 +110,13 @@ public class DataManager
 	}
 	
 	public void loadWorld() {
-		JFileChooser fChoose = new JFileChooser();
-		if(fChoose.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+//		JFileChooser fChoose = new JFileChooser();
+//		if(fChoose.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+		File f = FXFileDialog.openWorldFile(appFrame);
+		if(f != null) {
 			try {
 				ObjectInputStream ois = new ObjectInputStream(
-						new FileInputStream(fChoose.getSelectedFile()));
+						new FileInputStream(f));
 				Object read = ois.readObject();
 				if(read instanceof WorldArticle w) {
 					world = w;
