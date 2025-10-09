@@ -48,7 +48,7 @@ public class ArticleTree extends JTree {
 	public ArticleTree(DataManager data) {
 		super();
 		sortedModel = new SortedTreeModel(data.getWorldTreeRoot());
-		this.setModel(sortedModel);
+		setModel(sortedModel);
 		this.data = data;
 		selectedNodeListeners = new ArrayList<SelectedNodeListener>();
 		buildPopups();
@@ -114,29 +114,23 @@ public class ArticleTree extends JTree {
 
 				// If it's meant to be a "folder" (e.g. userObject is a String)
 				// force it to always use the folder icon.
-				if (tree.getModel().getRoot() == value) {
-		            setText("");
-		            setIcon(null);
-		            setPreferredSize(new Dimension(0, 0));
-		        }else {
-		        	boolean isFolder = node.getUserObject() instanceof String;
-					if (isFolder) {
-						leaf = false;
-						setIcon(expanded ? getOpenIcon() : getClosedIcon());
-					} else if (node.getUserObject() instanceof MapKey) {
-						URL iconURL = getClass().getResource(StyleManager.DOC_ICON_RESOURCE);
-						Icon leafIcon;
-						if (iconURL != null) {
-							ImageIcon original = new ImageIcon(iconURL);
-							Image scaled = original.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
-							leafIcon = new ImageIcon(scaled);
-						} else {
-							leafIcon = UIManager.getIcon("FileView.fileIcon"); // fallback
-							System.err.println("Could not find /doc_icon.png in resources!");
-						}
-						setIcon(leafIcon);
+				boolean isFolder = node.getUserObject() instanceof String;
+				if (isFolder) {
+					leaf = false;
+					setIcon(expanded ? getOpenIcon() : getClosedIcon());
+				} else if (node.getUserObject() instanceof MapKey) {
+					URL iconURL = getClass().getResource(StyleManager.DOC_ICON_RESOURCE);
+					Icon leafIcon;
+					if (iconURL != null) {
+						ImageIcon original = new ImageIcon(iconURL);
+						Image scaled = original.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+						leafIcon = new ImageIcon(scaled);
+					} else {
+						leafIcon = UIManager.getIcon("FileView.fileIcon"); // fallback
+						System.err.println("Could not find /doc_icon.png in resources!");
 					}
-		        }
+					setIcon(leafIcon);
+				}
 				
 				return this;
 			}
@@ -251,6 +245,7 @@ public class ArticleTree extends JTree {
 	public void newFolder(DefaultMutableTreeNode parent, String parentName) {
 		if (parent != null) {
 			DefaultMutableTreeNode node = new DefaultMutableTreeNode(parentName);
+			node.setAllowsChildren(true);
 			sortedModel.insertNodeInto(node, parent, parent.getChildCount());
 
 			// Expand parent so the new node is visible
@@ -295,6 +290,16 @@ public class ArticleTree extends JTree {
 			else
 				list.onNodeDeselected();
 		}
+	}
+	
+	public void setModel(TreeModel model) {
+	    super.setModel(model);
+
+	    if (model instanceof SortedTreeModel m) {
+	        m.sortTree();
+	        // optional: force UI refresh
+	        this.updateUI();
+	    }
 	}
 	
 	public void expandAll(boolean expand) {

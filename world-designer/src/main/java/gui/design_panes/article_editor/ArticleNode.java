@@ -19,6 +19,7 @@ public class ArticleNode extends DefaultMutableTreeNode implements MapKeyNameLis
 
 	public ArticleNode(MapKey key, JTree tree) {
 		this.tree = tree;
+		this.allowsChildren = false;
 		key.registerNameListener(this);
 		this.setUserObject(key);
 	}

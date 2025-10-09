@@ -109,7 +109,6 @@ public class DataManager
 				Object read = ois.readObject();
 				if(read instanceof WorldArticle w) {
 					world = w;
-					System.out.println("Loaded World Cat: " + world.styles.toString());
 					notifyWorldChange();
 				}
 				ois.close();

@@ -1,8 +1,123 @@
+//package gui.design_panes.article_editor;
+//
+//import java.text.Collator;
+//import java.util.Comparator;
+//import java.util.Locale;
+//import java.util.regex.Matcher;
+//import java.util.regex.Pattern;
+//
+//import javax.swing.tree.DefaultMutableTreeNode;
+//import javax.swing.tree.DefaultTreeModel;
+//import javax.swing.tree.MutableTreeNode;
+//
+//import data.MapKey;
+//
+//public class SortedTreeModel extends DefaultTreeModel {
+//
+//    private static final Collator collator = Collator.getInstance(Locale.getDefault());
+//    static {
+//        collator.setStrength(Collator.PRIMARY); // ignore case, accents
+//    }
+//
+//    public SortedTreeModel(DefaultMutableTreeNode root) {
+//        super(root);
+//    }
+//
+//    /**
+//     * Natural string comparison: treats numbers as numbers (so "2" < "10").
+//     */
+//    private static int naturalCompare(String s1, String s2) {
+//        // Simple regex-based split into digit and non-digit chunks
+//        Pattern chunkPattern = Pattern.compile("(\\d+|\\D+)");
+//        Matcher m1 = chunkPattern.matcher(s1);
+//        Matcher m2 = chunkPattern.matcher(s2);
+//
+//        while (m1.find() && m2.find()) {
+//            String c1 = m1.group(1);
+//            String c2 = m2.group(1);
+//
+//            // If both chunks are numbers, compare numerically
+//            if (c1.chars().allMatch(Character::isDigit) && c2.chars().allMatch(Character::isDigit)) {
+//                long n1 = Long.parseLong(c1);
+//                long n2 = Long.parseLong(c2);
+//                if (n1 != n2)
+//                    return Long.compare(n1, n2);
+//            } else {
+//                // Otherwise, compare alphabetically using collator
+//                int result = collator.compare(c1, c2);
+//                if (result != 0)
+//                    return result;
+//            }
+//        }
+//
+//        // If all chunks equal so far, shorter string wins
+//        return Integer.compare(s1.length(), s2.length());
+//    }
+//
+//    /**
+//     * Comparator for nodes: folders first, then alphabetical (natural order).
+//     */
+//    private static final Comparator<DefaultMutableTreeNode> NODE_COMPARATOR = (a, b) -> {
+//        // Folders (branches) before files (leafs)
+//    	
+//        if (!a.getAllowsChildren() && b.getAllowsChildren()) return -1;
+//        if (a.getAllowsChildren() && !b.getAllowsChildren()) return 1;
+//
+//        // Both same type  sort by name (MapKey or String)
+//        String name1, name2;
+//        Object o1 = a.getUserObject();
+//        Object o2 = b.getUserObject();
+//
+//        if (o1 instanceof MapKey m1 && o2 instanceof MapKey m2) {
+//            name1 = m1.getName();
+//            name2 = m2.getName();
+//        } else {
+//            name1 = String.valueOf(o1);
+//            name2 = String.valueOf(o2);
+//        }
+//
+//        return naturalCompare(name1, name2);
+//    };
+//
+//    @Override
+//    public void insertNodeInto(MutableTreeNode newChild, MutableTreeNode parent, int index) {
+//        if (!(newChild instanceof DefaultMutableTreeNode)) {
+//            super.insertNodeInto(newChild, parent, index);
+//            return;
+//        }
+//
+//        int childCount = parent.getChildCount();
+//        int newIndex = 0;
+//
+//        for (; newIndex < childCount; newIndex++) {
+//            MutableTreeNode siblingNode = (MutableTreeNode) parent.getChildAt(newIndex);
+//            if (NODE_COMPARATOR.compare((DefaultMutableTreeNode) newChild,
+//                                        (DefaultMutableTreeNode) siblingNode) < 0) {
+//                break;
+//            }
+//        }
+//
+//        super.insertNodeInto(newChild, parent, newIndex);
+//    }
+//    
+//    public static DefaultMutableTreeNode buildBaseTree(String[] folders) {
+//    	DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+//    	SortedTreeModel sorter = new SortedTreeModel(root);
+//    	for(String folder : folders) {
+//    		sorter.insertNodeInto(new DefaultMutableTreeNode(folder, true), root, root.getChildCount());
+//    	}
+//    	return root;
+//    }
+//}
+
+
 package gui.design_panes.article_editor;
 
 import java.text.Collator;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,19 +130,18 @@ import data.MapKey;
 public class SortedTreeModel extends DefaultTreeModel {
 
     private static final Collator collator = Collator.getInstance(Locale.getDefault());
-    static {
-        collator.setStrength(Collator.PRIMARY); // ignore case, accents
-    }
+    static { collator.setStrength(Collator.PRIMARY); }
 
     public SortedTreeModel(DefaultMutableTreeNode root) {
         super(root);
     }
 
-    /**
-     * Natural string comparison: treats numbers as numbers (so "2" < "10").
-     */
+    /** Natural string comparison that treats digit-chunks as numbers (without parsing to long). */
     private static int naturalCompare(String s1, String s2) {
-        // Simple regex-based split into digit and non-digit chunks
+        if (Objects.equals(s1, s2)) return 0;
+        if (s1 == null) return -1;
+        if (s2 == null) return 1;
+
         Pattern chunkPattern = Pattern.compile("(\\d+|\\D+)");
         Matcher m1 = chunkPattern.matcher(s1);
         Matcher m2 = chunkPattern.matcher(s2);
@@ -36,47 +150,50 @@ public class SortedTreeModel extends DefaultTreeModel {
             String c1 = m1.group(1);
             String c2 = m2.group(1);
 
-            // If both chunks are numbers, compare numerically
-            if (c1.chars().allMatch(Character::isDigit) && c2.chars().allMatch(Character::isDigit)) {
-                long n1 = Long.parseLong(c1);
-                long n2 = Long.parseLong(c2);
-                if (n1 != n2)
-                    return Long.compare(n1, n2);
+            boolean n1 = c1.chars().allMatch(Character::isDigit);
+            boolean n2 = c2.chars().allMatch(Character::isDigit);
+            if (n1 && n2) {
+                // Compare numeric chunks without overflow: strip leading zeros, compare length then lexicographically
+                String q1 = stripLeadingZeros(c1);
+                String q2 = stripLeadingZeros(c2);
+                if (q1.length() != q2.length()) return Integer.compare(q1.length(), q2.length());
+                int cmp = q1.compareTo(q2);
+                if (cmp != 0) return cmp;
+                // If numerically equal (e.g. "001" vs "1"), shorter raw chunk first
+                if (c1.length() != c2.length()) return Integer.compare(c1.length(), c2.length());
             } else {
-                // Otherwise, compare alphabetically using collator
-                int result = collator.compare(c1, c2);
-                if (result != 0)
-                    return result;
+                int cmp = collator.compare(c1, c2);
+                if (cmp != 0) return cmp;
             }
         }
 
-        // If all chunks equal so far, shorter string wins
+        // If one string had extra chunks, shorter string wins
         return Integer.compare(s1.length(), s2.length());
     }
 
-    /**
-     * Comparator for nodes: folders first, then alphabetical (natural order).
-     */
+    private static String stripLeadingZeros(String s) {
+        int i = 0; while (i < s.length() && s.charAt(i) == '0') i++;
+        return i == s.length() ? "0" : s.substring(i);
+    }
+
+    /** Comparator: treat nodes that allow children as "folders" (folders first), then natural name order. */
     private static final Comparator<DefaultMutableTreeNode> NODE_COMPARATOR = (a, b) -> {
-        // Folders (branches) before files (leafs)
-        if (!a.isLeaf() && b.isLeaf()) return -1;
-        if (a.isLeaf() && !b.isLeaf()) return 1;
+        // IMPORTANT: use getAllowsChildren() instead of isLeaf().
+        boolean aFolder = a.getAllowsChildren();
+        boolean bFolder = b.getAllowsChildren();
+        if (aFolder && !bFolder) return -1;
+        if (!aFolder && bFolder) return 1;
 
-        // Both same type  sort by name (MapKey or String)
-        String name1, name2;
-        Object o1 = a.getUserObject();
-        Object o2 = b.getUserObject();
-
-        if (o1 instanceof MapKey m1 && o2 instanceof MapKey m2) {
-            name1 = m1.getName();
-            name2 = m2.getName();
-        } else {
-            name1 = String.valueOf(o1);
-            name2 = String.valueOf(o2);
-        }
-
+        String name1 = nodeName(a);
+        String name2 = nodeName(b);
         return naturalCompare(name1, name2);
     };
+
+    private static String nodeName(DefaultMutableTreeNode node) {
+        Object o = node.getUserObject();
+        if (o instanceof MapKey mk) return mk.getName();
+        return String.valueOf(o);
+    }
 
     @Override
     public void insertNodeInto(MutableTreeNode newChild, MutableTreeNode parent, int index) {
@@ -87,24 +204,60 @@ public class SortedTreeModel extends DefaultTreeModel {
 
         int childCount = parent.getChildCount();
         int newIndex = 0;
-
         for (; newIndex < childCount; newIndex++) {
-            MutableTreeNode siblingNode = (MutableTreeNode) parent.getChildAt(newIndex);
+            MutableTreeNode sibling = (MutableTreeNode) parent.getChildAt(newIndex);
             if (NODE_COMPARATOR.compare((DefaultMutableTreeNode) newChild,
-                                        (DefaultMutableTreeNode) siblingNode) < 0) {
+                                        (DefaultMutableTreeNode) sibling) < 0) {
                 break;
             }
         }
 
         super.insertNodeInto(newChild, parent, newIndex);
+
+        // Force a full re-sort of this parent's children to handle cases where
+        // children may have been added in arbitrary order (e.g. during deserialization).
+        // If you care about extreme performance, you can remove this call and rely
+        // on incremental insertion only, but this guarantees consistency.
+        sortChildren((DefaultMutableTreeNode) parent);
+    }
+
+    /** Sorts children of a parent in-place and reloads the node (fires tree structure event). */
+    public void sortChildren(DefaultMutableTreeNode parent) {
+        int n = parent.getChildCount();
+        if (n < 2) return;
+        DefaultMutableTreeNode[] arr = new DefaultMutableTreeNode[n];
+        for (int i = 0; i < n; i++) arr[i] = (DefaultMutableTreeNode) parent.getChildAt(i);
+
+        Arrays.sort(arr, NODE_COMPARATOR);
+        parent.removeAllChildren();
+        for (DefaultMutableTreeNode c : arr) parent.add(c);
+        reload(parent); // notify listeners
     }
     
+    public void sortTree() {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) getRoot();
+        if (root != null) {
+            sortSubtree(root);
+        }
+    }
+
+    private void sortSubtree(DefaultMutableTreeNode parent) {
+        sortChildren(parent);
+
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) parent.getChildAt(i);
+            if (child.getAllowsChildren()) {
+                sortSubtree(child);
+            }
+        }
+    }
+
     public static DefaultMutableTreeNode buildBaseTree(String[] folders) {
-    	DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-    	SortedTreeModel sorter = new SortedTreeModel(root);
-    	for(String folder : folders) {
-    		sorter.insertNodeInto(new DefaultMutableTreeNode(folder, true), root, root.getChildCount());
-    	}
-    	return root;
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        SortedTreeModel sorter = new SortedTreeModel(root);
+        for (String folder : folders) {
+            sorter.insertNodeInto(new DefaultMutableTreeNode(folder, true), root, root.getChildCount());
+        }
+        return root;
     }
 }
