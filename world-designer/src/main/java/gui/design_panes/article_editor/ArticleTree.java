@@ -19,6 +19,8 @@ import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import data.DataManager;
@@ -52,6 +54,7 @@ public class ArticleTree extends JTree {
 		buildPopups();
 
 		setRootVisible(false);
+		setShowsRootHandles(true);
 		setEditable(true);
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -68,6 +71,17 @@ public class ArticleTree extends JTree {
 					else
 						articleMenu.node = (ArticleNode) node;
 				}
+				
+				if(node != null) {
+					if(selectedNode != node) {
+						selectedNode = node;
+						notifySelectionChange();
+					}
+				}else{
+					selectedNode = null;
+					clearSelection();
+					notifySelectionChange();
+				}
 
 				if (SwingUtilities.isRightMouseButton(e)) {
 					if (node != null) {
@@ -81,17 +95,9 @@ public class ArticleTree extends JTree {
 						rootMenu.show(ArticleTree.this, e.getX(), e.getY());
 					}
 				} else if (SwingUtilities.isLeftMouseButton(e)) {
-					if(node != null) {
-						if(selectedNode != node) {
-							selectedNode = node;
-							notifySelectionChange();
-						}
-						
+					if(node != null) {						
 						if(node.getUserObject() instanceof MapKey)
 							editArticle(node);
-					}else{
-						selectedNode = null;
-						notifySelectionChange();
 					}
 				}
 			}
@@ -108,21 +114,30 @@ public class ArticleTree extends JTree {
 
 				// If it's meant to be a "folder" (e.g. userObject is a String)
 				// force it to always use the folder icon.
-				if (node.getUserObject() instanceof String) {
-					setIcon(expanded ? getOpenIcon() : getClosedIcon());
-				} else if (node.getUserObject() instanceof MapKey) {
-					URL iconURL = getClass().getResource(StyleManager.DOC_ICON_RESOURCE);
-					Icon leafIcon;
-					if (iconURL != null) {
-						ImageIcon original = new ImageIcon(iconURL);
-						Image scaled = original.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
-						leafIcon = new ImageIcon(scaled);
-					} else {
-						leafIcon = UIManager.getIcon("FileView.fileIcon"); // fallback
-						System.err.println("Could not find /doc_icon.png in resources!");
+				if (tree.getModel().getRoot() == value) {
+		            setText("");
+		            setIcon(null);
+		            setPreferredSize(new Dimension(0, 0));
+		        }else {
+		        	boolean isFolder = node.getUserObject() instanceof String;
+					if (isFolder) {
+						leaf = false;
+						setIcon(expanded ? getOpenIcon() : getClosedIcon());
+					} else if (node.getUserObject() instanceof MapKey) {
+						URL iconURL = getClass().getResource(StyleManager.DOC_ICON_RESOURCE);
+						Icon leafIcon;
+						if (iconURL != null) {
+							ImageIcon original = new ImageIcon(iconURL);
+							Image scaled = original.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+							leafIcon = new ImageIcon(scaled);
+						} else {
+							leafIcon = UIManager.getIcon("FileView.fileIcon"); // fallback
+							System.err.println("Could not find /doc_icon.png in resources!");
+						}
+						setIcon(leafIcon);
 					}
-					setIcon(leafIcon);
-				}
+		        }
+				
 				return this;
 			}
 		});
@@ -152,13 +167,22 @@ public class ArticleTree extends JTree {
 		rootMenu.add(CompFactory.createMenuItem("Add Folder", e -> newFolder(data.getWorldTreeRoot())));
 
 		folderMenu = new NodePopup();
-		folderMenu.add(CompFactory.createMenuItem("Add Folder", e -> newFolder(folderMenu.node)));
-		folderMenu.add(CompFactory.createMenuItem("Add Article", e -> newArticle(folderMenu.node)));
-		folderMenu.add(CompFactory.createMenuItem("Rename Folder", e-> renameNode(folderMenu.node)));
+		folderMenu.add(CompFactory.createMenuItem(
+				"Add Folder", e -> newFolder(folderMenu.node)));
+		folderMenu.add(CompFactory.createMenuItem(
+				"Add Article", e -> newArticle(folderMenu.node)));
+		folderMenu.add(CompFactory.createMenuItem(
+				"Rename Folder", e-> renameNode(folderMenu.node)));
+		folderMenu.add(CompFactory.createMenuItem(
+				"Delete Folder", e-> deleteNode(folderMenu.node)));
 
 		articleMenu = new NodePopup();
-		articleMenu.add(CompFactory.createMenuItem("Edit Article", e -> editArticle(articleMenu.node)));
-		articleMenu.add(CompFactory.createMenuItem("Rename Article", e->renameNode(articleMenu.node)));
+		articleMenu.add(CompFactory.createMenuItem(
+				"Edit Article", e -> editArticle(articleMenu.node)));
+		articleMenu.add(CompFactory.createMenuItem(
+				"Rename Article", e->renameNode(articleMenu.node)));
+		articleMenu.add(CompFactory.createMenuItem(
+				"Delete Article", e->deleteNode(articleMenu.node)));
 	}
 
 	public void editArticle(DefaultMutableTreeNode node) {
@@ -238,6 +262,18 @@ public class ArticleTree extends JTree {
 			scrollPathToVisible(newPath);
 		}
 	}
+	
+	public void deleteNode(DefaultMutableTreeNode node) {
+		if(node.getUserObject() instanceof MapKey m) {
+			data.removeArticleFromWorld(m);
+			
+			for(int i = editTabs.getTabCount() - 1; i >= 0; i--)
+				if(editTabs.getComponentAt(i) instanceof ArticleDesignPane aPane)
+					if(aPane.getArticleKey().equals(m))
+						editTabs.removeTabAt(i);
+		}
+		sortedModel.removeNodeFromParent(node);
+	}
 
 	public void renameNode(DefaultMutableTreeNode node) {
 		if (node != null)
@@ -260,4 +296,34 @@ public class ArticleTree extends JTree {
 				list.onNodeDeselected();
 		}
 	}
+	
+	public void expandAll(boolean expand) {
+        TreeNode root = (TreeNode) getModel().getRoot();
+        expandAll(new TreePath(root), expand);
+    }
+
+    private void expandAll(TreePath parent, boolean expand) {
+        TreeNode node = (TreeNode) parent.getLastPathComponent();
+
+        // Recurse into children first
+        if (node.getChildCount() >= 0) {
+            for (int i = 0; i < node.getChildCount(); i++) {
+                TreeNode child = node.getChildAt(i);
+                TreePath path = parent.pathByAddingChild(child);
+                expandAll(path, expand);
+            }
+        }
+
+        // Don't collapse the (invisible) root
+        if (parent.getParentPath() == null && !isRootVisible()) {
+            return;
+        }
+
+        // Expand or collapse this path
+        if (expand) {
+            expandPath(parent);
+        } else {
+            collapsePath(parent);
+        }
+    }
 }

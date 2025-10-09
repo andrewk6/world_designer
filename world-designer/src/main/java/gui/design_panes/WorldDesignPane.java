@@ -46,14 +46,18 @@ public class WorldDesignPane extends JPanel{
 		});
 	}
 	private final DataManager data;
-	
 	private WorldArticle world;
+	
+	private RichEditor editor;
+	private ReminderField nameField;
+	private DefaultListModel<SettingStyle> styleModel;
+	private boolean supressStyleListener = false;
 	
 	
 	public WorldDesignPane(DataManager data, WorldArticle w) {
 		this.data = data;
-		this.world = w;
 		init();
+		loadWorld(w);
 	}
 	
 	private void init() {
@@ -62,14 +66,12 @@ public class WorldDesignPane extends JPanel{
 		JPanel hPane = new JPanel();
 		hPane.setLayout(new BorderLayout());
 		this.add(hPane, BorderLayout.NORTH);
-		ReminderField nameField = CompFactory.createUpdateField(
-				"World name...", FontStyle.HEADER3, text -> world.key.setName(text));
-		nameField.setText(world.key.getName());
+		nameField = CompFactory.createUpdateField(
+				"World name...", FontStyle.HEADER3, text -> getWorld().key.setName(text));
 		hPane.add(CompFactory.createSplitPane("Name: ", nameField),BorderLayout.NORTH);
 		
-		DefaultListModel<SettingStyle> styleModel = new DefaultListModel<SettingStyle>();
-		for(SettingStyle s : world.styles)
-			styleModel.addElement(s);
+		styleModel = new DefaultListModel<SettingStyle>();
+		
 		JList<SettingStyle> list = CompFactory.createList(styleModel);
 		styleModel.addListDataListener(new ListDataListener() {
 			@Override
@@ -80,10 +82,12 @@ public class WorldDesignPane extends JPanel{
 			public void contentsChanged(ListDataEvent e) { updateArray(); }
 			
 			private void updateArray() {
-				System.out.println("Updated");
-				world.styles.clear();
-				for(int i = 0; i < styleModel.getSize(); i ++)
-					world.styles.add(styleModel.getElementAt(i));
+				if(!supressStyleListener) {
+					world.styles.clear();
+					for(int i = 0; i < styleModel.getSize(); i ++) {
+						world.styles.add(styleModel.getElementAt(i));
+					}
+				}
 			}
 		});
 		
@@ -100,12 +104,21 @@ public class WorldDesignPane extends JPanel{
 		
 		hPane.add(CompFactory.createSplitPane(settingPane, list));
 		
-		RichEditor editor = new RichEditor(data);
-		editor.loadDocument(world.worldDoc);
+		editor = new RichEditor(data);
 		this.add(editor, BorderLayout.CENTER);
 	}
 	
 	public WorldArticle getWorld() {
 		return world;
+	}
+	
+	public void loadWorld(WorldArticle w) {
+		supressStyleListener = true;
+		this.world = w;
+		nameField.setText(w.key.getName());
+		for(SettingStyle s : world.styles)
+			styleModel.addElement(s);
+		editor.loadDocument(world.worldDoc);
+		supressStyleListener = false;
 	}
 }

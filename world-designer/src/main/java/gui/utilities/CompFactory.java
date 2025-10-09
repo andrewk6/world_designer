@@ -224,7 +224,7 @@ public class CompFactory {
 				if(r != null)
 					r.run();
 				e.getWindow().setVisible(false);
-				data.Exit();
+				data.exit();
 			}
 			@Override
 			public void windowOpened(WindowEvent e) {}

@@ -1,5 +1,7 @@
 package data;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -17,7 +19,7 @@ public class MapKey implements Comparable<MapKey>, Serializable
 	private String name;
 	private UUID id;
 	
-	private final ArrayList<MapKeyNameListener> nameUpdates;
+	private transient ArrayList<MapKeyNameListener> nameUpdates;
 	
 	
 	public MapKey() {
@@ -81,5 +83,10 @@ public class MapKey implements Comparable<MapKey>, Serializable
 	@Override
 	public int compareTo(MapKey o) {
 		return 0;
+	}
+	
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+	    in.defaultReadObject(); // Restore non-transient fields
+	    nameUpdates = new ArrayList<>(); // Reinitialize transient fields
 	}
 }

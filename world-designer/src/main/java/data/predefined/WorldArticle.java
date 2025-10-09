@@ -14,8 +14,10 @@ import javax.swing.text.StyledDocument;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import data.DataEnums.SettingStyle;
+import data.DataEnums;
 import data.MapKey;
 import data.abstracts.AbstractArticle;
+import gui.design_panes.article_editor.SortedTreeModel;
 import gui.utilities.documents.DocumentBuilder;
 import gui.utilities.documents.DocumentHelper;
 
@@ -33,7 +35,7 @@ public class WorldArticle extends AbstractArticle
 	
 	public WorldArticle(String name) {
 		super(name);
-		root = new DefaultMutableTreeNode(name, true);
+		root = SortedTreeModel.buildBaseTree(DataEnums.getDefaultFoldersArray());
 		articleMap = new HashMap<MapKey, BasicArticle>();
 		worldDoc = DocumentHelper.getNewDocument();
 		styles = new ArrayList<SettingStyle>();
@@ -44,7 +46,7 @@ public class WorldArticle extends AbstractArticle
 		categories.add(cat);
 	}
 	
-	public void removeCategory(MapKey cat) {
+	public void removeCategory(String cat) {
 		categories.remove(cat);
 	}
 	

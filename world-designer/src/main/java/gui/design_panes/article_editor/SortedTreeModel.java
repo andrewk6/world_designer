@@ -1,75 +1,3 @@
-//package gui.design_panes.article_editor;
-//
-//import java.text.Collator;
-//import java.util.Comparator;
-//import java.util.Locale;
-//
-//import javax.swing.tree.DefaultMutableTreeNode;
-//import javax.swing.tree.DefaultTreeModel;
-//import javax.swing.tree.MutableTreeNode;
-//import data.MapKey;
-//
-//public class SortedTreeModel extends DefaultTreeModel {
-//
-//	private static final Collator collator = Collator.getInstance(Locale.getDefault());
-//	static {
-//	    collator.setStrength(Collator.PRIMARY); // ignore case, accents
-//	}
-//	
-//    public SortedTreeModel(DefaultMutableTreeNode root) {
-//        super(root);
-//    }
-//
-//    private static final Comparator<DefaultMutableTreeNode> NODE_COMPARATOR = (a, b) -> {
-//        // Next: folders before files
-//        if (!a.isLeaf() && b.isLeaf()) return -1;
-//        if (a.isLeaf() && !b.isLeaf()) return 1;
-//
-//        // Finally: alphabetical by name
-//        if(a.getUserObject() instanceof MapKey aM 
-//        		&& b.getUserObject() instanceof MapKey bM)
-//        {
-//        	return collator.compare(aM.getName(), bM.getName());
-//        }else {
-//        	String name1 = String.valueOf(a.getUserObject());
-//            String name2 = String.valueOf(b.getUserObject());
-//            return collator.compare(name1, name2);
-//        }
-//    };
-//    
-//    @Override
-//    public void insertNodeInto(MutableTreeNode newChild, MutableTreeNode parent, int index) {
-//        if (!(newChild instanceof DefaultMutableTreeNode)) {
-//            super.insertNodeInto(newChild, parent, index);
-//            return;
-//        }
-//
-//        int childCount = parent.getChildCount();
-//        int newIndex = 0;
-//
-//        for (; newIndex < childCount; newIndex++) {
-//            MutableTreeNode siblingNode = (MutableTreeNode) parent.getChildAt(newIndex);
-//
-//            // Branches are DefaultMutableTreeNode, leaves are ArticleNode
-//            if ((newChild instanceof ArticleNode && siblingNode instanceof DefaultMutableTreeNode) ||
-//                (newChild instanceof DefaultMutableTreeNode && siblingNode instanceof ArticleNode)) {
-//                // Branches come before leaves
-//                if (newChild instanceof DefaultMutableTreeNode) break; // branch before leaf
-//                else continue; // leaf after branch
-//            }
-//
-//            // Both are same type: sort by userObject
-//            Comparable<Object> newObj = (Comparable<Object>) ((DefaultMutableTreeNode) newChild).getUserObject();
-//            Comparable<Object> siblingObj = (Comparable<Object>) ((DefaultMutableTreeNode) siblingNode).getUserObject();
-//            if (NODE_COMPARATOR.compare((DefaultMutableTreeNode) newChild, (DefaultMutableTreeNode) siblingNode) < 0) {
-//                break;
-//            }
-//        }
-//
-//        super.insertNodeInto(newChild, parent, newIndex);
-//    }
-//}
-
 package gui.design_panes.article_editor;
 
 import java.text.Collator;
@@ -169,5 +97,14 @@ public class SortedTreeModel extends DefaultTreeModel {
         }
 
         super.insertNodeInto(newChild, parent, newIndex);
+    }
+    
+    public static DefaultMutableTreeNode buildBaseTree(String[] folders) {
+    	DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+    	SortedTreeModel sorter = new SortedTreeModel(root);
+    	for(String folder : folders) {
+    		sorter.insertNodeInto(new DefaultMutableTreeNode(folder, true), root, root.getChildCount());
+    	}
+    	return root;
     }
 }

@@ -1,13 +1,20 @@
 package data;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.JFileChooser;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import data.DataEnums.ArticleCategory;
 import data.abstracts.AbstractArticle;
 import data.listeners.WorldListener;
 import data.predefined.BasicArticle;
@@ -50,6 +57,10 @@ public class DataManager
 		world.articleMap.put(ba.key, ba);
 	}
 	
+	public void removeArticleFromWorld(MapKey key) {
+		world.articleMap.remove(key);
+	}
+	
 	public Map<MapKey, BasicArticle> getArticleMap(){
 		return Collections.unmodifiableMap(world.articleMap);
 	}
@@ -68,8 +79,45 @@ public class DataManager
 		}
 	}
 	
-	public void Exit() {
+	public void exit() {
 		if(!worldEdited)
 			System.exit(0);
+	}
+	
+	public void saveWorld() {
+		JFileChooser fChoose = new JFileChooser();
+		if(fChoose.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+			try {
+				ObjectOutputStream oos = new ObjectOutputStream(
+						new FileOutputStream(fChoose.getSelectedFile()));
+				System.out.println("Writing World Cat: " + world.styles.toString());
+				oos.writeObject(world);
+				oos.flush();
+				oos.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void loadWorld() {
+		JFileChooser fChoose = new JFileChooser();
+		if(fChoose.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+			try {
+				ObjectInputStream ois = new ObjectInputStream(
+						new FileInputStream(fChoose.getSelectedFile()));
+				Object read = ois.readObject();
+				if(read instanceof WorldArticle w) {
+					world = w;
+					System.out.println("Loaded World Cat: " + world.styles.toString());
+					notifyWorldChange();
+				}
+				ois.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

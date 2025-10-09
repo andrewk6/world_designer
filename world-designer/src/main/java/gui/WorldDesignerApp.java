@@ -76,14 +76,28 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 		JMenuBar menuBar = new JMenuBar();
 		this.setJMenuBar(menuBar);
 		
-		menuBar.add(CompFactory.createMenu("Worlds", new JMenuItem[] {
+		JMenu worldMenu = CompFactory.createMenu("Worlds", new JMenuItem[] {
 				CompFactory.createMenuItem("New World", e->{
 					String worldName = JOptionPane.showInputDialog(this, "What is the world's name?");
 					if(worldName != null)
 						if(worldName.length() > 0)
 							data.createNewWorld(worldName);
-				})
-		}));
+				}),
+				CompFactory.createMenuItem("Load World", e->data.loadWorld())
+		});
+		menuBar.add(worldMenu);
+		
+		JMenuItem saveItem = CompFactory.createMenuItem("Save World", e->data.saveWorld());
+		saveItem.setEnabled(false);
+		worldMenu.add(saveItem);
+		WorldListener saveEnable = new WorldListener() {
+			@Override
+			public void onWorldChanged() {
+				SwingUtilities.invokeLater(()->saveItem.setEnabled(true));
+				data.deregisterWorldListener(this);
+			}
+		};
+		data.registerWorldListener(saveEnable);
 		
 		articleMenu.setVisible(false);
 		menuBar.add(articleMenu);
@@ -94,23 +108,44 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 		});
 		renameItem.setEnabled(false);
 		articleMenu.add(renameItem);
+		
+		JMenuItem deleteItem = CompFactory.createMenuItem("Delete", e->{
+			artTreePane.getTree().deleteNode(artTreePane.getTree().getSelectedNode());
+		});
+		deleteItem.setEnabled(false);
+		articleMenu.add(deleteItem);
+		
 		nodeListen = new SelectedNodeListener() {
 			@Override
 			public void onNodeSelected() {
 				SwingUtilities.invokeLater(()->{
 					if(!renameItem.isEnabled())
 						renameItem.setEnabled(true);
-					if(artTreePane.getTree().getSelectedNode().getUserObject() instanceof String)
+					if(!deleteItem.isEnabled())
+						deleteItem.setEnabled(true);
+					
+					if(artTreePane.getTree().getSelectedNode().getUserObject() instanceof String) {
 						renameItem.setText("Rename Folder");
-					else
+						deleteItem.setText("Delete Folder");
+					}else {
 						renameItem.setText("Rename Article");
+						deleteItem.setText("Delete Article");
+					}
 				});
 			}
 			@Override
 			public void onNodeDeselected() {
-				SwingUtilities.invokeLater(()->renameItem.setEnabled(false));
+				SwingUtilities.invokeLater(()->{
+					renameItem.setEnabled(false);
+					deleteItem.setEnabled(false);
+				});
 			}
 		};
+		
+		articleMenu.add(CompFactory.createMenuItem(
+				"Expand All", e->artTreePane.getTree().expandAll(true)));
+		articleMenu.add(CompFactory.createMenuItem(
+				"Collapse All", e->artTreePane.getTree().expandAll(false)));
 	}
 	
 	private void buildContent(Container c) {
