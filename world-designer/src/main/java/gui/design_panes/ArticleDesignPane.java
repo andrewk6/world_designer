@@ -9,8 +9,8 @@ import javax.swing.text.BadLocationException;
 
 import data.DataManager;
 import data.MapKey;
+import data.articles.predefined.BasicArticle;
 import data.listeners.MapKeyNameListener;
-import data.predefined.BasicArticle;
 import gui.components.ReminderField;
 import gui.components.editor.RichEditor;
 import gui.utilities.CompFactory;

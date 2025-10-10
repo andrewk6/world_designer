@@ -1,4 +1,4 @@
-package data.predefined;
+package data.articles.predefined;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -7,7 +7,7 @@ import java.io.ObjectOutputStream;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
-import data.abstracts.AbstractArticle;
+import data.articles.abstracts.AbstractArticle;
 import gui.utilities.documents.DocumentBuilder;
 import gui.utilities.documents.DocumentHelper;
 

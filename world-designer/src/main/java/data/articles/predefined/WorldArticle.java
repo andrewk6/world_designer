@@ -1,4 +1,4 @@
-package data.predefined;
+package data.articles.predefined;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -14,9 +14,9 @@ import javax.swing.text.StyledDocument;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import data.DataEnums.SettingStyle;
+import data.articles.abstracts.AbstractArticle;
 import data.DataEnums;
 import data.MapKey;
-import data.abstracts.AbstractArticle;
 import gui.design_panes.article_editor.SortedTreeModel;
 import gui.utilities.documents.DocumentBuilder;
 import gui.utilities.documents.DocumentHelper;

@@ -17,8 +17,8 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 import data.DataEnums.SettingStyle;
+import data.articles.predefined.WorldArticle;
 import data.DataManager;
-import data.predefined.WorldArticle;
 import gui.components.ReminderField;
 import gui.components.editor.RichEditor;
 import gui.utilities.CompFactory;

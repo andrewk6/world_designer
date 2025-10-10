@@ -1,8 +1,9 @@
-package data.abstracts;
+package data.articles.abstracts;
 
 import java.io.Serializable;
 
 import data.MapKey;
+import data.articles.InsertHelper;
 
 public abstract class AbstractArticle implements 
 	InsertHelper, Comparable<AbstractArticle>, Serializable

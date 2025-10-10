@@ -25,8 +25,8 @@ import javax.swing.tree.TreePath;
 
 import data.DataManager;
 import data.MapKey;
+import data.articles.predefined.BasicArticle;
 import data.listeners.MapKeyNameListener;
-import data.predefined.BasicArticle;
 import gui.design_panes.ArticleDesignPane;
 import gui.utilities.CompFactory;
 import gui.utilities.StyleManager;

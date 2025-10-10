@@ -28,7 +28,7 @@ import javax.swing.tree.TreePath;
 
 import data.DataManager;
 import data.MapKey;
-import data.predefined.BasicArticle;
+import data.articles.predefined.BasicArticle;
 import gui.utilities.CompFactory;
 import gui.utilities.StyleManager;
 

@@ -19,9 +19,9 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
 import data.DataManager;
+import data.articles.predefined.WorldArticle;
 import data.listeners.MapKeyNameListener;
 import data.listeners.WorldListener;
-import data.predefined.WorldArticle;
 import gui.design_panes.WorldDesignPane;
 import gui.design_panes.article_editor.ArticleTreePane;
 import gui.design_panes.article_editor.SelectedNodeListener;

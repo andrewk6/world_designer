@@ -1,4 +1,4 @@
-package data.abstracts;
+package data.articles;
 
 public interface InsertHelper
 {

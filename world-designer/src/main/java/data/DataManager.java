@@ -16,10 +16,10 @@ import javax.swing.JFrame;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import data.DataEnums.ArticleCategory;
-import data.abstracts.AbstractArticle;
+import data.articles.abstracts.AbstractArticle;
+import data.articles.predefined.BasicArticle;
+import data.articles.predefined.WorldArticle;
 import data.listeners.WorldListener;
-import data.predefined.BasicArticle;
-import data.predefined.WorldArticle;
 import gui.dialogs.FXFileDialog;
 
 public class DataManager

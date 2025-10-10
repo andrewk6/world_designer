@@ -24,8 +24,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import data.DataManager;
-import data.abstracts.AbstractArticle;
-import data.predefined.WorldArticle;
+import data.articles.abstracts.AbstractArticle;
+import data.articles.predefined.WorldArticle;
 import gui.components.ReminderField;
 import gui.design_panes.WorldDesignPane;
 import gui.utilities.StyleManager.FontStyle;

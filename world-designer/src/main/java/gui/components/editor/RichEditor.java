@@ -48,8 +48,8 @@ import javax.swing.text.StyledDocument;
 
 import data.DataManager;
 import data.MapKey;
-import data.predefined.BasicArticle;
-import data.predefined.WorldArticle;
+import data.articles.predefined.BasicArticle;
+import data.articles.predefined.WorldArticle;
 
 public class RichEditor extends JPanel
 {
