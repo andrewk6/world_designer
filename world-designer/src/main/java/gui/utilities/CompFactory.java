@@ -10,6 +10,7 @@ import java.awt.event.WindowListener;
 import java.util.function.Consumer;
 
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -18,6 +19,7 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -53,7 +55,6 @@ public class CompFactory {
 	    }
 	};
 	
-	public static final int SCROLL_SPEED = 16;
 	
 	public static JLabel createLabel(String txt) {
 		JLabel out = new JLabel(txt);
@@ -144,9 +145,20 @@ public class CompFactory {
 	}
 	
 	public static JButton createButton(String txt, Runnable act) {
-		JButton out = new JButton(txt);
-		out.addActionListener(e-> act.run());
+		return createButton(txt, e->act.run());
+	}
+	
+	public static JButton createButton(ImageIcon ico, ActionListener act) {
+		JButton out = new JButton(ico);
+		out.setBorderPainted(false);
+		out.setContentAreaFilled(false);
+		out.setFocusPainted(false);
+		out.addActionListener(act);
 		return out;
+	}
+	
+	public static JButton createButton(ImageIcon ico, Runnable act) {
+		return createButton(ico, e-> act.run());
 	}
 	
 	public static<T extends Enum<T>> JComboBox<T> getEnumCombo(Class<T> enumType){
@@ -156,7 +168,7 @@ public class CompFactory {
 	
 	public static JMenu createMenu(String menu) {
 		JMenu out = new JMenu(menu);
-		out.setFont(FontStyle.BOLD1.getFont());
+		out.setFont(FontStyle.PLAIN1.getFont());
 		return out;
 	}
 	
@@ -169,6 +181,7 @@ public class CompFactory {
 	
 	public static JMenuItem createMenuItem(String txt, ActionListener act) {
 		JMenuItem out = new JMenuItem(txt);
+		out.setFont(FontStyle.PLAIN1.getFont());
 		out.addActionListener(act);
 		return out;
 	}
@@ -192,12 +205,20 @@ public class CompFactory {
 		return out;
 	}
 	
+	public static JScrollPane createScroll(JPanel pane) {
+		JScrollPane out = new JScrollPane(pane);
+		out.getVerticalScrollBar().setUnitIncrement(StyleManager.SCROLL_INCREMENT);
+		out.getHorizontalScrollBar().setUnitIncrement(StyleManager.SCROLL_INCREMENT);
+		
+		return out;
+	}
+	
 	public static JPanel createButtonFlow(int layout, JButton[] btns) {
 		JPanel pane = new JPanel();
 		pane.setLayout(new FlowLayout(layout));
-		for(JButton btn : btns) {
-			pane.add(btn);
-		}
+		if(btns != null)
+			for(JButton btn : btns)
+				pane.add(btn);
 		return pane;
 	}
 	
@@ -241,9 +262,10 @@ public class CompFactory {
 		};
 	}
 	
-	public static void buildTestWindow(JPanel pane) {
+	public static void buildTestWindow(Container pane) {
 		DataManager data = new DataManager();
 		SwingUtilities.invokeLater(()->{
+			StyleManager.setLookAndFeel();
 			JFrame frm = new JFrame();
 			frm.setContentPane(pane);
 			frm.addWindowListener(createSafeExitListener(null, data));
@@ -253,9 +275,10 @@ public class CompFactory {
 		});
 	}
 	
-	public static void buildTestWindow(JPanel pane, Runnable test) {
+	public static void buildTestWindow(Container pane, Runnable test) {
 		DataManager data = new DataManager();
 		SwingUtilities.invokeLater(()->{
+			StyleManager.setLookAndFeel();
 			JFrame frm = new JFrame();
 			Container cPane = frm.getContentPane();
 			cPane.setLayout(new BorderLayout());

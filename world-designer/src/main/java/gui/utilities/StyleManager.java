@@ -48,6 +48,9 @@ public class StyleManager
 	
 	public static final String DOC_ICON_RESOURCE = "/doc_icon.png";
 	
+	public static final int GRID_SIZE = 32;
+	public static final int SCROLL_INCREMENT = 24;
+	
 	public static void setLookAndFeel() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -59,5 +62,7 @@ public class StyleManager
 		UIManager.put("Label.font", BODY_PLAIN);
 		UIManager.put("Button.font", BUTTON);
 		UIManager.put("TextPane.font", BODY_PLAIN);
+		
+		UIManager.put("ScrollBar.unitIncrement", SCROLL_INCREMENT);
 	}
 }

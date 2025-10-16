@@ -1,5 +1,6 @@
 package gui.map_editor;
 import java.awt.Color;
+import java.awt.Image;
 import java.awt.Polygon;
 import java.util.Arrays;
 
@@ -12,6 +13,8 @@ public class Hex extends Polygon
 	public int[] xco, yco;
 	public boolean selected;
 	public MapHex hexInfo;
+	
+	
 	
 	public Hex(int x1, int y1, MapHex info, int size)
 	{
@@ -52,6 +55,10 @@ public class Hex extends Polygon
 		return hexInfo.color;
 	}
 	
+	public void setColor(Color c) {
+		hexInfo.color = c;
+	}
+	
 	public int getRow() {
 		return hexInfo.row;
 	}
@@ -62,5 +69,13 @@ public class Hex extends Polygon
 	
 	public MapHex getHexInfo() {
 		return hexInfo;
+	}
+
+	public void setIcon(Image icon) {
+		hexInfo.setIcon(icon);
+	}
+
+	public Image getIcon() {
+		return hexInfo.getIcon();
 	}
 }
