@@ -93,7 +93,7 @@ public class WorldDesignPane extends JPanel{
 		
 		JPanel settingPane = new JPanel();
 		settingPane.setLayout(new BorderLayout());
-		JComboBox<SettingStyle>	styleCombo = CompFactory.getEnumCombo(SettingStyle.class);
+		JComboBox<SettingStyle>	styleCombo = CompFactory.createEnumCombo(SettingStyle.class);
 		settingPane.add(styleCombo, BorderLayout.NORTH);
 		
 		JButton addBtn = CompFactory.createButton("Add Style", e->{

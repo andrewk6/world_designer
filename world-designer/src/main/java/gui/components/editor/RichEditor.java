@@ -208,7 +208,7 @@ public class RichEditor extends JPanel
 		underBtn.setFont(base.deriveFont(attributes));
 		controls.add(underBtn);
 		
-		readyStyles = CompFactory.getEnumCombo(FontStyle.class);
+		readyStyles = CompFactory.createEnumCombo(FontStyle.class);
 		readyStyles.addItemListener(e->{
 			FontStyle fs = (FontStyle) readyStyles.getSelectedItem();
 			initStyle(fs.getFont());

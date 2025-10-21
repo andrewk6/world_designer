@@ -85,6 +85,10 @@ public class ReminderField extends JTextField {
 	public void setPlainDocument() {
 		this.setDocument(new PlainDocument());
 	}
+	
+	public int getInteger() {
+		return Integer.parseInt(getText());
+	}
 
 	@Override
 	protected void paintComponent(Graphics g) {

@@ -20,9 +20,11 @@ import java.util.Stack;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 import data.map.LandMap;
 import data.map.MapHex;
+import gui.dialogs.ArticleDialog;
 import gui.map_editor.ToolSet.Tool;
 import gui.utilities.CompFactory;
 import gui.utilities.ImageManager.MapIcon;
@@ -49,9 +51,23 @@ public class HexPane extends JPanel {
 		this.map = map;
 		buildGrid(map.rows, map.cols, StyleManager.GRID_SIZE);
 		buildStaticLayer();
+
+		repaint();
 		this.setLayout(null);
 		
 		buildMouseControls();
+	}
+	
+	public void loadGrid(LandMap map) {
+		hexs = new HashMap<MapHex, Hex>();
+		workingHex = null;
+		this.map = map;
+		
+		buildGrid(map.rows, map.cols, StyleManager.GRID_SIZE);
+		buildStaticLayer();
+		
+		revalidate();
+		repaint();
 	}
 
 	private void buildGrid(int rows, int cols, int size) {
@@ -73,7 +89,6 @@ public class HexPane extends JPanel {
 						size);
 				hexs.put(hexInfo, h);
 			}
-		repaint();
 	}
 	
 	private void buildMouseControls() {
@@ -91,6 +106,7 @@ public class HexPane extends JPanel {
 				switch(toolSet.getTool()) {
 				case SELECT -> processSelect(edit);
 				case BRUSH -> changeColor(edit, toolSet.getColor());
+				case ERASE -> changeColor(edit, Color.WHITE);
 				case FILL -> floodFill(edit, toolSet.getColor());
 				case ICON -> addIcon(edit, toolSet.getIcon());
 				
@@ -111,6 +127,7 @@ public class HexPane extends JPanel {
 				switch(toolSet.getTool()) {
 				case SELECT -> processSelect(null);
 				case BRUSH -> changeColor(workingHex, toolSet.getColor());
+				case ERASE -> changeColor(workingHex, Color.WHITE);
 				case FILL -> changeColor(null, null);
 				case ICON ->{
 					if(toolSet.getIcon() == MapIcon.EMPTY)
@@ -159,7 +176,8 @@ public class HexPane extends JPanel {
 	private void processSelect(Hex sel) {
 		if(sel != null) {
 			if(sel.getIcon() != null) {
-				
+				sel.setKeyLists(ArticleDialog.showArticleSelectDialog(
+						SwingUtilities.getWindowAncestor(this), toolSet.getData()));
 			}
 		}
 	}

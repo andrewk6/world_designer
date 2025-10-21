@@ -5,8 +5,11 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.FlowLayout;
+import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -19,12 +22,17 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
 import data.DataManager;
+import data.MapKey;
 import data.articles.predefined.WorldArticle;
 import data.listeners.MapKeyNameListener;
 import data.listeners.WorldListener;
+import data.map.LandMap;
 import gui.design_panes.WorldDesignPane;
 import gui.design_panes.article_editor.ArticleTreePane;
 import gui.design_panes.article_editor.SelectedNodeListener;
+import gui.dialogs.MapDialog;
+import gui.dialogs.MapLoadDialog;
+import gui.map_editor.MapEditorPane;
 import gui.utilities.CompFactory;
 import gui.utilities.StyleManager.FontStyle;
 
@@ -46,10 +54,14 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 	private final DataManager data;
 	
 	private final JMenu articleMenu = CompFactory.createMenu("Articles");
+	private final JMenu mapMenu = CompFactory.createMenu("Maps");
+	private final JMenu quickLoadMenu = CompFactory.createMenu("Quick Load Map");
 	private final JTabbedPane editTabs = new JTabbedPane();
 	
 	private WorldDesignPane worldDetailPane;
 	private ArticleTreePane artTreePane;
+	private MapEditorPane mapEditPane;
+	
 	private SelectedNodeListener nodeListen;
 	
 	public WorldDesignerApp(DataManager data)
@@ -148,7 +160,81 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 				"Expand All", e->artTreePane.getTree().expandAll(true)));
 		articleMenu.add(CompFactory.createMenuItem(
 				"Collapse All", e->artTreePane.getTree().expandAll(false)));
+		
+		mapMenu.setVisible(false);
+		menuBar.add(mapMenu);
+		
+		mapMenu.add(CompFactory.createMenuItem("New Map", e->{
+			LandMap map = MapDialog.showDialog(SwingUtilities.getWindowAncestor(this));
+			if(map != null) {
+				data.addMapToWorld(map);
+				loadMap(map.key);
+				updateQuickList();
+			}
+		}));
+		
+		mapMenu.add(CompFactory.createMenuItem("Load Map", e->{
+			MapKey loadKey = MapLoadDialog.showDialog(
+					SwingUtilities.getWindowAncestor(this), data);
+			if(loadKey != null) {
+				loadMap(loadKey);
+				updateQuickList();
+			}
+		}));
+		
+		mapMenu.add(quickLoadMenu);
 	}
+	
+	private void updateQuickList() {
+		if(data.getWorld() == null) return;
+		List<MapKey> keys = data.getQuickLoads();
+		if(keys == null) return;
+		
+		SwingUtilities.invokeLater(() -> {
+			quickLoadMenu.removeAll();
+			if(keys.size() == 0)
+				quickLoadMenu.setEnabled(false);
+			else {
+				quickLoadMenu.setEnabled(true);
+				
+				for(MapKey key : keys) {
+					quickLoadMenu.add(CompFactory.createMenuItem(
+							key.getName(), e-> {
+								loadMap(key);
+								updateQuickList();
+							}));
+				}
+			}
+		});
+	}
+	
+	private void loadMap(MapKey key) {
+		if(mapEditPane == null) {
+			mapEditPane = new MapEditorPane(data, data.getMap(key));
+			editTabs.addTab("Map Editor", mapEditPane);
+		}else {
+//			editTabs.removeTabAt(editTabs.indexOfComponent(mapEditPane));
+//			mapEditPane = new MapEditorPane(data, data.getMap(key));
+//			editTabs.addTab("Map Editor", mapEditPane);
+			mapEditPane.loadMap(data.getMap(key));
+		}
+	}
+	
+//	private void addMapPane(LandMap map) {
+//		JPanel mapPane = new JPanel();
+//		mapPane.setLayout(new BorderLayout());
+//		
+//		MapEditorPane mEdit = new MapEditorPane(data, map);
+//		mapPane.add(mEdit, BorderLayout.CENTER);
+//		
+//		JPanel btnFlow = CompFactory.createButtonFlow(FlowLayout.RIGHT, new JButton[] {
+//				CompFactory.createButton("Remove " + map.key.getName(), e->{
+//					editTabs.removeTabAt(editTabs.indexOfComponent(mapPane));
+//				})
+//		});
+//		mapPane.add(btnFlow, BorderLayout.SOUTH);
+//		editTabs.addTab(map.key.getName(), mapPane);
+//	}
 	
 	private void buildContent(Container c) {
 		c.setLayout(new BorderLayout());
@@ -160,22 +246,6 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 		JPanel cardWrapper = new JPanel();
 		cardWrapper.setLayout(new CardLayout());
 		CardLayout cl = (CardLayout) cardWrapper.getLayout();
-//		WorldListener cardListen = new WorldListener() {
-//			@Override
-//			public void onWorldChanged() {
-//				cl.show(cardWrapper, "edit");
-//				data.deregisterWorldListener(this);
-//				
-//				WorldListener tabListener = new WorldListener() {
-//					@Override
-//					public void onWorldChanged() {
-//						buildTabPanes(data.getWorld());
-//					}
-//				};
-//				data.registerWorldListener(tabListener);
-//			}
-//		};
-//		data.registerWorldListener(cardListen);
 		mainPane.add(cardWrapper, BorderLayout.CENTER);
 		
 		JPanel noLoadPane = new JPanel();
@@ -215,6 +285,8 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 		artTreePane = new ArticleTreePane(data);
 		artTreePane.getTree().registerSelectedNodeListener(nodeListen);
 		editTabs.addTab(w.key.getName() + " - Articles", artTreePane);
+		
+//		mapPane = new MapEditorPane(data, null)
 	}
 
 	@Override
@@ -222,6 +294,8 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 		Component tabComp = editTabs.getSelectedComponent();
 		if(data.getWorld() != null && articleMenu.isVisible() == false) {
 			articleMenu.setVisible(true);
+			mapMenu.setVisible(true);
+			updateQuickList();
 		}
 		
 		if(editTabs.isVisible() == false || 
@@ -242,6 +316,11 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 			artTreePane.loadTree(data.getWorldTreeRoot());
 			if(tabComp != null)
 				editTabs.setSelectedComponent(tabComp);
+			for(int i = editTabs.getTabCount(); i > 0; i++) {
+				if(!(editTabs.getTabComponentAt(i) instanceof WorldDesignPane) &&
+						!(editTabs.getTabComponentAt(i) instanceof ArticleTreePane))
+					editTabs.removeTabAt(i);
+			}
 		}
 	}
 }

@@ -3,7 +3,9 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.Polygon;
 import java.util.Arrays;
+import java.util.List;
 
+import data.MapKey;
 import data.map.MapHex;
 
 public class Hex extends Polygon
@@ -77,5 +79,14 @@ public class Hex extends Polygon
 
 	public Image getIcon() {
 		return hexInfo.getIcon();
+	}
+	
+	public List<MapKey> getKeyLists(){
+		return hexInfo.associatedKeys;
+	}
+	
+	public void setKeyLists(List<MapKey> list) {
+		hexInfo.associatedKeys.clear();
+		hexInfo.associatedKeys.addAll(list);
 	}
 }

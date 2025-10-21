@@ -32,6 +32,14 @@ public class LandMap implements Serializable, Iterable<MapHex>
 		for(int r = 0; r < rows; r ++)
 			for(int c = 0; c < cols; c ++)
 				hexGrid[r][c] = new MapHex(r, c);
+		
+		Iterator<MapHex> mapIter = iterator();
+		while(mapIter.hasNext()) {
+			MapHex hex = mapIter.next();
+			hex.name = hex.row + "," + hex.col;
+			hex.color = Color.WHITE;
+		}
+		
 		for(int r = 0; r < rows; r ++)
 			for(int c = 0; c < cols; c ++)
 				hexGrid[r][c].setNeighbors(buildNeighbors(r, c));

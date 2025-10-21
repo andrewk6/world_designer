@@ -161,7 +161,13 @@ public class CompFactory {
 		return createButton(ico, e-> act.run());
 	}
 	
-	public static<T extends Enum<T>> JComboBox<T> getEnumCombo(Class<T> enumType){
+	public static <T> JComboBox<T> createCombo(T[] elements){
+		JComboBox<T> combo = new JComboBox<T>(elements);
+		combo.setFont(StyleManager.BODY_PLAIN);
+		return combo;
+	}
+	
+	public static<T extends Enum<T>> JComboBox<T> createEnumCombo(Class<T> enumType){
 		JComboBox<T> combo = new JComboBox<T>(enumType.getEnumConstants());
 		return combo;
 	}

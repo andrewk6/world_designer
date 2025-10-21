@@ -32,6 +32,7 @@ public class ImageManager
 
 	public static final Image SELECT_TOOL;
 	public static final Image PAINT_TOOL;
+	public static final Image ERASER_TOOL;
 	public static final Image FILL_TOOL;
 
 	static {
@@ -71,6 +72,18 @@ public class ImageManager
 	        e.printStackTrace();
 	    }
 	    PAINT_TOOL = temp;
+	    
+	    temp = null;
+	    try (InputStream in = ImageManager.class.getResourceAsStream("/toolicons/eraser.png")) {
+	        if (in != null) {
+	            temp = ImageIO.read(in);
+	        } else {
+	            System.err.println("Resource not found: /toolicons/eraser.png");
+	        }
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	    ERASER_TOOL = temp;
 	    
 	    temp = null;
 	    try (InputStream in = ImageManager.class.getResourceAsStream("/toolicons/paintbucket.png")) {

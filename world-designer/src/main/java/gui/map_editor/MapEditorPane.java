@@ -18,7 +18,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.text.BadLocationException;
 
+import data.DataManager;
 import data.map.LandMap;
 import data.map.MapHex;
 import gui.utilities.CompFactory;
@@ -27,6 +29,7 @@ import gui.dialogs.ColorDialog;
 import gui.map_editor.ToolSet.Tool;
 import gui.map_editor.map_listener.ToolChangeAdapter;
 import gui.utilities.StyleManager;
+import gui.utilities.TestingFrame;
 import gui.utilities.ImageManager.MapIcon;
 import gui.utilities.color_picker.ColorSwatches;
 
@@ -40,8 +43,13 @@ public class MapEditorPane extends JPanel
 			hex.name = hex.row + "," + hex.col;
 			hex.color = Color.WHITE;
 		}
-		MapEditorPane mPane = new MapEditorPane(map);
-		CompFactory.buildTestWindow(mPane);
+		try {
+			TestingFrame frame = new TestingFrame(
+					new MapEditorPane(TestingFrame.buildDatabaseTest(), map));
+			frame.setVisible(true);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private LandMap map;
@@ -49,10 +57,13 @@ public class MapEditorPane extends JPanel
 	private HexPane hPane;
 	private JColorChooser colSelect;
 	private ToolSet toolSet;
+	private JScrollPane mapScroll;
 	
-	public MapEditorPane(LandMap map) {
+	private DataManager data;
+	
+	public MapEditorPane(DataManager data, LandMap map) {
 		this.map = map;
-		toolSet = new ToolSet();
+		toolSet = new ToolSet(data);
 		colSelect = new JColorChooser();
 		
 		buildContent();
@@ -67,14 +78,22 @@ public class MapEditorPane extends JPanel
 		buildMenu(controlPane);
 		
 		hPane = new HexPane(map, toolSet);
-		JScrollPane mapScroll = CompFactory.createScroll(hPane);
+		mapScroll = CompFactory.createScroll(hPane);
 		this.add(mapScroll, BorderLayout.CENTER);
+	}
+	
+	public void loadMap(LandMap map) {
+		this.map = map;
+		hPane.loadGrid(map);
+//		mapScroll.upd
+		
 	}
 	
 	private void buildMenu(JPanel controlPane) {
 		JPanel btnFlow = CompFactory.createButtonFlow(FlowLayout.LEFT, new JButton[] {
 				buildToolButton(Tool.SELECT),
 				buildToolButton(Tool.BRUSH),
+				buildToolButton(Tool.ERASE),
 				buildToolButton(Tool.FILL)
 		});
 		toolSet.setTool(Tool.BRUSH);

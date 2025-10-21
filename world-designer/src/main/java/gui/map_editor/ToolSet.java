@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Image;
 import java.util.ArrayList;
 
+import data.DataManager;
 import gui.map_editor.map_listener.ToolListener;
 import gui.utilities.ImageManager;
 import gui.utilities.ImageManager.MapIcon;
@@ -13,6 +14,7 @@ public class ToolSet
 	public enum Tool{
 		SELECT("Select", ImageManager.SELECT_TOOL),
 		BRUSH("Brush", ImageManager.PAINT_TOOL),
+		ERASE("Eraser", ImageManager.ERASER_TOOL),
 		FILL("Fill", ImageManager.FILL_TOOL),
 		ICON("Icon", null);
 		
@@ -36,10 +38,12 @@ public class ToolSet
 	private Tool tool;
 	private Color color;
 	private MapIcon icon;
+	private final DataManager data;
 	
 	private ArrayList<ToolListener> toolTrackers;
 	
-	public ToolSet() {
+	public ToolSet(DataManager data) {
+		this.data = data;
 		toolTrackers = new ArrayList<ToolListener>();
 		tool = Tool.BRUSH;
 		color = Color.GREEN;
@@ -74,6 +78,10 @@ public class ToolSet
 	
 	public MapIcon getIcon() {
 		return icon;
+	}
+	
+	public DataManager getData() {
+		return data;
 	}
 	
 	public void registerToolListener(ToolListener reg) {

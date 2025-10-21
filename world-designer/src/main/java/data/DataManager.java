@@ -9,7 +9,9 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -20,6 +22,7 @@ import data.articles.abstracts.AbstractArticle;
 import data.articles.predefined.BasicArticle;
 import data.articles.predefined.WorldArticle;
 import data.listeners.WorldListener;
+import data.map.LandMap;
 import gui.dialogs.FXFileDialog;
 
 public class DataManager
@@ -67,6 +70,38 @@ public class DataManager
 	
 	public Map<MapKey, BasicArticle> getArticleMap(){
 		return Collections.unmodifiableMap(world.articleMap);
+	}
+	
+	public void addMapToWorld(LandMap map) {
+		world.mapMap.put(map.key, map);
+	}
+	
+	public void removeMapFromWorld(MapKey key) {
+		world.mapMap.remove(key);
+	}
+	
+	public LandMap getMap(MapKey key) {
+		world.quickLoad.load(key);
+		return world.mapMap.get(key);
+	}
+	
+	public boolean checkMapKey(MapKey key) {
+		return world.mapMap.containsKey(key);
+	}
+	
+	public List<MapKey> getMapKeys(){
+		return Collections.unmodifiableList(new ArrayList<MapKey>(world.mapMap.keySet()));
+	}
+	
+	public List<MapKey> getQuickLoads(){
+		return world.quickLoad.getList();
+	}
+	
+	public List<MapKey> getMapKeysSorted(){
+		List<MapKey> keys = new ArrayList<MapKey>(world.articleMap.keySet());
+		keys.add(world.key);
+		Collections.sort(keys);
+		return Collections.unmodifiableList(keys);
 	}
 	
 	public void registerWorldListener(WorldListener wl) {

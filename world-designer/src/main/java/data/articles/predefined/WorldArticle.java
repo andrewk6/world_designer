@@ -15,8 +15,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import data.DataEnums.SettingStyle;
 import data.articles.abstracts.AbstractArticle;
+import data.map.LandMap;
 import data.DataEnums;
 import data.MapKey;
+import data.QuickLoadList;
 import gui.design_panes.article_editor.SortedTreeModel;
 import gui.utilities.documents.DocumentBuilder;
 import gui.utilities.documents.DocumentHelper;
@@ -31,6 +33,8 @@ public class WorldArticle extends AbstractArticle
 	public DefaultMutableTreeNode root;
 	public ArrayList<SettingStyle> styles;
 	public HashMap<MapKey, BasicArticle> articleMap;
+	public HashMap<MapKey, LandMap> mapMap;
+	public QuickLoadList<MapKey> quickLoad;
 	public Set<String> categories;
 	
 	public WorldArticle(String name) {
@@ -40,6 +44,9 @@ public class WorldArticle extends AbstractArticle
 		worldDoc = DocumentHelper.getNewDocument();
 		styles = new ArrayList<SettingStyle>();
 		categories = new TreeSet<String>();
+		
+		mapMap = new HashMap<MapKey, LandMap>();
+		quickLoad = new QuickLoadList<MapKey>(7);
 	}
 	
 	public void addCategory(String cat) {
