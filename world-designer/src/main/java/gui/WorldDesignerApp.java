@@ -213,9 +213,6 @@ public class WorldDesignerApp extends JFrame implements WorldListener
 			mapEditPane = new MapEditorPane(data, data.getMap(key));
 			editTabs.addTab("Map Editor", mapEditPane);
 		}else {
-//			editTabs.removeTabAt(editTabs.indexOfComponent(mapEditPane));
-//			mapEditPane = new MapEditorPane(data, data.getMap(key));
-//			editTabs.addTab("Map Editor", mapEditPane);
 			mapEditPane.loadMap(data.getMap(key));
 		}
 	}
